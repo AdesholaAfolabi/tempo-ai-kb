@@ -81,8 +81,11 @@ def filter_message_data(all_messages):
     filtered_message_data = []
     for data in all_messages:
         new_data = {}
+        channel_join = False
         for key, value in data.items():
-            if (key == 'text' or key == 'thread'):
+            if (key == 'subtype' and data[key] == 'channel_join'):
+               channel_join = True
+            if ((key == 'text' or key == 'thread') and not channel_join):
                 new_data[key] = value
 
         filtered_message_data.append(new_data)

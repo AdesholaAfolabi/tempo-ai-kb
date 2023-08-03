@@ -45,44 +45,9 @@
             }
         ]
     },
-    {
-        "text": "<@U058125K6SH> has joined the channel"
-    },
-    {
-        "text": "Test thread",
-        "thread": [
-            {
-                "text": "1"
-            },
-            {
-                "text": "2"
-            },
-            {
-                "text": "3"
-            }
-        ]
-    },
-    {
-        "text": "<@U05D1A26KB4> has joined the channel"
-    },
-    {
-        "text": "5"
-    },
-    {
-        "text": "4"
-    },
-    {
-        "text": "3"
-    },
-    {
-        "text": "2"
-    },
-    {
-        "text": "msg 1"
-    },
-    {
-        "text": "<@U058LA7M9CZ> has joined the channel"
-    },
+    {},
+    {},
+    {},
     {
         "text": "Hi team,\nPlease help me with the correct response to the prospect. Is it better to raise a support ticket for this?\nThey already opened two I think.\nThank you!\n\n_I have just spent 4 hours going through each person’s schedule. i had got to letter J - Julia Toms, everything was looking fine and agains same issue as yesterday all my bookings have vanished?_\n\n_Is this an issue you have seen before?_",
         "thread": [
@@ -126,20 +91,6 @@
             },
             {
                 "text": "The teams are generated automatically from everyone who has logged time to the projects/issues defined in your JQL for your Cost Tracker project so a “team” doesn’t show up until someone logs time to those issues.\n\n<https://help.tempo.io/cloud/en/tempo-cost-tracker/working-with-the-project-team.html>"
-            }
-        ]
-    },
-    {
-        "text": "Test thread",
-        "thread": [
-            {
-                "text": "1"
-            },
-            {
-                "text": "2"
-            },
-            {
-                "text": "3"
             }
         ]
     }
