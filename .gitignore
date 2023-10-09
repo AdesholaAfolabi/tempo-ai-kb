@@ -175,3 +175,10 @@ cython_debug/
 # Thumbnail cache files
 ._*
 Thumbs.db
+
+*.pdf
+*.env
+*.docx
+*.docx
+*.txt
+*.json
