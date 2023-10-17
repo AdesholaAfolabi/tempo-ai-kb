@@ -17,7 +17,7 @@ st.set_page_config(
 st.markdown('<style>footer {visibility: hidden;}</style>', unsafe_allow_html=True)
 
 # Create a title container with an image and text
-st.markdown('<div class="title-container"><img src="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg" alt="Image" width="80"/><h1 class="title-text">Tempo-AI KB Information Retriever</h1></div>', unsafe_allow_html=True)
+st.markdown('<div class="title-container"><img src="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg" alt="Image" width="80"/><h1 class="title-text">Conversational Information Retriever</h1></div>', unsafe_allow_html=True)
 
 # Define the model name for the chatbot
 model_name = "gpt-3.5-turbo"
@@ -63,7 +63,7 @@ def main():
             st.markdown(question)
 
         # Add the chatbot's response to the conversation history
-        with st.expander("Assistant"):
+        with st.expander("Tempo AI"):
             message_placeholder = st.empty()
             message_placeholder.markdown(output + "▌")
             message_placeholder.markdown(output)
