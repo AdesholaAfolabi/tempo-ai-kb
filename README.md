@@ -18,6 +18,9 @@ To run the web app:
 
 The web app should now be up and running. See below for a preview of how the app should appear when correctly set up.
 
+
+![streamlit app](./app_images/streamlit.png)
+
 ### Slack App
 
 The Slack app setup involves a few additional steps, as it requires access to the Slack account you're using and adjustments to public URLs provided by Ngrok.
@@ -33,3 +36,6 @@ The Slack app setup involves a few additional steps, as it requires access to th
 5. Access the Slack app [settings page](https://api.slack.com/apps).
 6. Update the Slash Commands request URL to reflect the new URL provided by Ngrok.
 7. In your Slack workspace, type /ai-helper and ask your question to interact with the app.
+
+
+![slack app](./app_images/slack.png)
