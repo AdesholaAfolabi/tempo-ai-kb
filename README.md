@@ -1,7 +1,7 @@
 # Tempo AI Knowledge Base
 
 The AI Knowledge Base (AIKB) will be a one-stop-shop for ALL information retrieval across all Tempo products.
-The application is deployed as both a web app (using Streamlit) and a Slack.
+The application is deployed as both a web app (using Streamlit) and a Slack app.
 
 ## Getting Started
 
