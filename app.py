@@ -1,78 +1,35 @@
 import streamlit as st
-import warnings
-from knowledge_base import doc_chat, load_embeddings, get_moderation
 import os
-from colorama import Fore, Back, Style
+from colorama import Style
+from knowledge_base import doc_chat, load_embeddings, get_moderation
 
 # Set an environment variable to suppress warnings
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# Ignore warnings
-warnings.filterwarnings('ignore')
-
 # Configure Streamlit app settings
-st.set_page_config(layout="wide",
-                   page_title="Tempo-AI KB Information Retriever",
-                   page_icon="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg"
-                   )
+st.set_page_config(
+    layout="wide",
+    page_title="Tempo-AI KB Information Retriever",
+    page_icon="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg"
+)
 
 # Hide the default "Made with Streamlit" footer
-hide_default_format = """
-       <style>
-       footer {visibility: hidden;}
-       </style>
-       """
-st.markdown(hide_default_format, unsafe_allow_html=True)
-
-# Custom CSS to add an image to the title
-custom_css = """
-<style>
-.title-container {
-    display: flex;
-    align-items: center;
-}
-
-.title-text {
-    margin-left: 20px;
-}
-</style>
-"""
-
-# Use the custom CSS to style the title
-st.markdown(custom_css, unsafe_allow_html=True)
+st.markdown('<style>footer {visibility: hidden;}</style>', unsafe_allow_html=True)
 
 # Create a title container with an image and text
 st.markdown('<div class="title-container"><img src="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg" alt="Image" width="80"/><h1 class="title-text">Tempo-AI KB Information Retriever</h1></div>', unsafe_allow_html=True)
 
-# Set the title of the Streamlit app
-#st.title('Tempo-AI KB Information Retriever')
-
 # Define the model name for the chatbot
 model_name = "gpt-3.5-turbo"
-
-# Create a chat input field for user questions
-question = st.chat_input("What would you like to know?")
-
-# List of files and directory for document embeddings
-#files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf", "Documentation Links.docx"]
-files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf"]
-persist_directory = "docs/chroma/"
-
-# Create a vector database for document embeddings
-vectordb = load_embeddings(persist_directory, files)
-
 
 def main():
     """
     Main function for the Conversational Doc Retriever Streamlit app.
-
-    This function handles user input, processes questions with a chatbot,
-    and displays the conversation history.
-
-    Returns:
-        None
+    Handles user input, processes questions with a chatbot, and displays the conversation history.
     """
-    global vectordb
+    # Create a chat input field for user questions
+    question = st.text_input("What would you like to know?")
+
     if question:
         errors = get_moderation(question)
         if errors:
@@ -80,12 +37,16 @@ def main():
             for error in errors:
                 st.write(error)
                 st.write(Style.RESET_ALL)
-  
+
+        # List of files and directory for document embeddings
+        files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf"]
+        persist_directory = "docs/chroma/"
+
+        # Create a vector database for document embeddings
+        vectordb = load_embeddings(persist_directory, files)
+
         # Process the user's question with the chatbot and get a response
-        output = doc_chat(vectordb,
-                          model_name=model_name,
-                          question=str(question)
-                          )
+        output = doc_chat(vectordb, model_name=model_name, question=question)
 
         # Initialize or retrieve the conversation history
         if "messages" not in st.session_state:
@@ -93,16 +54,16 @@ def main():
 
         # Display the conversation history
         for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
+            with st.expander(message["role"]):
                 st.markdown(message["content"])
 
         # Add the user's question to the conversation history
         st.session_state.messages.append({"role": "user", "content": question})
-        with st.chat_message("user"):
+        with st.expander("User"):
             st.markdown(question)
 
         # Add the chatbot's response to the conversation history
-        with st.chat_message("assistant"):
+        with st.expander("Assistant"):
             message_placeholder = st.empty()
             message_placeholder.markdown(output + "▌")
             message_placeholder.markdown(output)
