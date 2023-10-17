@@ -39,7 +39,7 @@ def main():
                 st.write(Style.RESET_ALL)
 
         # List of files and directory for document embeddings
-        files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf"]
+        files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf", "roadmunk_support.pdf"]
         persist_directory = "docs/chroma/"
 
         # Create a vector database for document embeddings
