@@ -14,3 +14,4 @@ slack
 slack_sdk
 slackeventsapi
 flask
+colorama
