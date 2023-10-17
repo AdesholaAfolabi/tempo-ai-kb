@@ -7,6 +7,8 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, Response
 import openai
 from knowledge_base import doc_chat, load_embeddings
+import threading
+import requests
 
 # Load environment variables from .env file
 load_dotenv(find_dotenv())
@@ -31,22 +33,28 @@ app = Flask(__name__)
 # Initialize SlackEventAdapter
 slack_event_adapter = SlackEventAdapter(os.getenv("SIGNING_SECRET"), '/slack/events', app)
 
+def some_processing(question, channel_id):
+    """function for doing the actual work in a thread"""
+    response = doc_chat(vectordb, model_name="gpt-3.5-turbo", question=str(question))  
+    client.chat_postMessage(channel=channel_id, text=response)
+    #return Response(), 200
+
+
 @app.route('/ai-helper', methods=['POST'])
 def ai_helper():
     """
     Respond to AI-related queries in Slack.
     """
     data = request.form
-    user_id = data.get('user_id')
+    #user_id = data.get('user_id')
     channel_id = data.get('channel_id')
     question = data.get('text')
-
-    # Get a response from the AI knowledge base
-    response = doc_chat(vectordb, model_name="gpt-3.5-turbo", question=str(question))
-
-    # Post the response in the Slack channel
-    client.chat_postMessage(channel=channel_id, text=response)
-    return Response(), 200
-
+    # starting a new thread for doing the actual processing    
+    x = threading.Thread(
+            target=some_processing,
+            args=(question,channel_id,)
+        )
+    x.start()
+    return "Processing information.... please wait"
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=80, debug=True)
