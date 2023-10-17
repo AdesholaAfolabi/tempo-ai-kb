@@ -1,6 +1,8 @@
 import streamlit as st
 import warnings
-from knowledge_base import *
+from knowledge_base import doc_chat, load_embeddings, get_moderation
+import os
+from colorama import Fore, Back, Style
 
 # Set an environment variable to suppress warnings
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -22,11 +24,28 @@ hide_default_format = """
        """
 st.markdown(hide_default_format, unsafe_allow_html=True)
 
-# Add your logo
-st.image("tempo_logo.png", use_column_width=False)
+# Custom CSS to add an image to the title
+custom_css = """
+<style>
+.title-container {
+    display: flex;
+    align-items: center;
+}
+
+.title-text {
+    margin-left: 20px;
+}
+</style>
+"""
+
+# Use the custom CSS to style the title
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# Create a title container with an image and text
+st.markdown('<div class="title-container"><img src="https://media.licdn.com/dms/image/C560BAQFB6iq1ExA1pg/company-logo_200_200/0/1678219677198?e=1704931200&v=beta&t=ZGwm2O0XqJtoCtWehbXPVBDI_FMtuIguym_x4q8aTSg" alt="Image" width="80"/><h1 class="title-text">Tempo-AI KB Information Retriever</h1></div>', unsafe_allow_html=True)
 
 # Set the title of the Streamlit app
-st.title('Tempo-AI KB Information Retriever')
+#st.title('Tempo-AI KB Information Retriever')
 
 # Define the model name for the chatbot
 model_name = "gpt-3.5-turbo"
@@ -40,7 +59,8 @@ files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-res
 persist_directory = "docs/chroma/"
 
 # Create a vector database for document embeddings
-vectordb = create_embeddings(persist_directory, files)
+vectordb = load_embeddings(persist_directory, files)
+
 
 def main():
     """
@@ -53,10 +73,14 @@ def main():
         None
     """
     global vectordb
-
-    # Check if the user has entered a question
     if question:
-
+        errors = get_moderation(question)
+        if errors:
+            st.write("Sorry, your question didn't pass the moderation check:")
+            for error in errors:
+                st.write(error)
+                st.write(Style.RESET_ALL)
+  
         # Process the user's question with the chatbot and get a response
         output = doc_chat(vectordb,
                           model_name=model_name,

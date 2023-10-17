@@ -108,7 +108,7 @@ def split_docs(files: list):
     # Return the list of text chunks
     return splits
 
-def create_embeddings(persist_directory: str, files: list):
+def load_embeddings(persist_directory: str, files: list, vectordb=None):
     """
     Create document embeddings and store them in a vector database.
 
@@ -133,348 +133,54 @@ def create_embeddings(persist_directory: str, files: list):
     # Split documents into smaller text chunks
     splits = split_docs(files)
 
+    embedding = OpenAIEmbeddings()
     # Create a Chroma vector database from the document splits
-    vectordb = Chroma.from_documents(
-        documents=splits,
-        embedding=embedding,  # Make sure 'embedding' is defined and available
-        persist_directory=persist_directory  # The directory to save the vector database
-    )
-
-    # Return the Chroma vector database
-    return vectordb
-
-def similarity_search(vectordb, persist_directory: str, files: str, question: str, k=2):
-    """
-    Search for documents in a Vector Database based on their similarity to a given question.
-
-    This function takes as input a Vector Database, a directory containing pre-computed document embeddings, a list of
-    file names (or a single file) to consider, a question as a query, and an optional parameter 'k' representing the
-    number of most similar documents to retrieve.
-
-    Parameters:
-    - vectordb (VectorDB): The Vector Database containing document embeddings and metadata.
-    - persist_directory (str): The directory where pre-computed document embeddings are stored.
-    - files (str): A list of file names (or a single file) to be considered for similarity search.
-    - question (str): The query question for which similar documents are to be retrieved.
-    - k (int, optional): The number of most similar documents to retrieve (default is 2).
-
-    Returns:
-    - relevant_docs (list): A list of tuples containing the top 'k' most relevant documents and related metadata.
-
-    Example:
-    >>> vectordb = VectorDB()  # Initialize a Vector Database.
-    >>> persist_directory = "embedding_data"
-    >>> files = ["doc1.txt", "doc2.docx", "doc3.pdf"]
-    >>> question = "What are the benefits of exercise?"
-    >>> top_similar_docs = similarity_search(vectordb, persist_directory, files, question, k=3)
-    >>> print(top_similar_docs)
-
-    Note:
-    - The 'vectordb' parameter should be an initialized Vector Database.
-    - The 'persist_directory' should contain pre-computed document embeddings generated using 'create_embeddings'.
-    - The 'files' parameter can be a single filename or a list of filenames to be considered.
-    - The 'k' parameter specifies how many similar documents to retrieve, and it defaults to 2 if not provided.
-    - The higher the similarity score, the more similar the document is to the given question.
-
-    See Also:
-    - create_embeddings: Function to generate and store document embeddings in 'persist_directory'.
-    - VectorDB.similarity_search: Method to perform similarity search in a Vector Database.
-
-    """
-    relevant_docs = vectordb.similarity_search(question, k)  # Perform similarity search.
-    return relevant_docs
-
-
-def mmr_search(vectordb, persist_directory: str, files: str, question: str, k=2, fetch_k=3):
-    """
-    Perform Maximum Marginal Relevance (MMR) search to retrieve diverse and relevant documents.
-
-    This function conducts an MMR-based search on a set of documents represented by pre-computed embeddings stored in the
-    specified 'persist_directory'. It retrieves a list of relevant documents based on their similarity to the 'question'
-    while ensuring diversity among the top results.
-
-    Parameters:
-    - vectordb (VectorDB): The Vector Database containing document embeddings and metadata.
-    - persist_directory (str): The directory where pre-computed document embeddings are stored.
-    - files (str): A list of file names (or a single file) to be considered for MMR search.
-    - question (str): The query question for which diverse and relevant documents are to be retrieved.
-    - k (int, optional): The total number of diverse and relevant documents to retrieve (default is 2).
-    - fetch_k (int, optional): The number of top similar documents to fetch for diversity selection (default is 3).
-
-    Returns:
-    - relevant_docs (list): A list containing the top 'k' diverse and relevant documents and their associated metadata.
-
-    Example:
-    >>> vectordb = VectorDB()  # Initialize a Vector Database.
-    >>> persist_directory = "embedding_data"
-    >>> files = ["doc1.txt", "doc2.docx", "doc3.pdf"]
-    >>> question = "What are the benefits of exercise?"
-    >>> top_relevant_docs = mmr_search(vectordb, persist_directory, files, question, k=3, fetch_k=4)
-    >>> print(top_relevant_docs)
-
-    Note:
-    - The 'persist_directory' should contain pre-computed document embeddings generated using 'create_embeddings'.
-    - The 'files' parameter can be a single filename or a list of filenames to be considered.
-    - The 'k' parameter specifies how many diverse and relevant documents to retrieve, and it defaults to 2 if not provided.
-    - The 'fetch_k' parameter determines how many top similar documents to fetch for diversity selection and defaults
-      to 3 if not provided.
-    - The higher the similarity score, the more similar the document is to the given question, while MMR promotes diversity.
-
-    See Also:
-    - create_embeddings: Function to generate and store document embeddings in 'persist_directory'.
-    - VectorDB.max_marginal_relevance_search: Method to perform MMR-based document search in a Vector Database.
-
-    """
-    relevant_docs = vectordb.max_marginal_relevance_search(question, k, fetch_k)  # Perform MMR search.
-    return relevant_docs
-
-
-def self_query(vectordb, question: str, source_description: str, page_description: str, doc_description: str):
-    """
-    Perform a self-query to retrieve relevant documents based on a question and metadata attributes.
-
-    This function conducts a self-query using a Vector Database and a language model (LLM) to retrieve relevant
-    documents that match a given 'question' and have specific metadata attributes ('source', 'page'). The metadata
-    attributes are described by 'source_description', 'page_description', and 'doc_description'.
-
-    Parameters:
-    - vectordb (VectorDB): The Vector Database containing document embeddings and metadata.
-    - question (str): The query question for retrieving relevant documents.
-    - source_description (str): Description of the 'source' metadata attribute (e.g., "Author's Name").
-    - page_description (str): Description of the 'page' metadata attribute (e.g., "Page Number").
-    - doc_description (str): Description of the document content (e.g., "Document Text").
-
-    Returns:
-    - relevant_metadata (list): A list of dictionaries containing metadata information for relevant documents.
-                               Each dictionary includes metadata attributes and their values for a relevant document.
-
-    Example:
-    >>> vectordb = VectorDB()  # Initialize a Vector Database.
-    >>> question = "Who wrote this document?"
-    >>> source_description = "Author's Name"
-    >>> page_description = "Page Number"
-    >>> doc_description = "Document Text"
-    >>> relevant_metadata = self_query(vectordb, question, source_description, page_description, doc_description)
-    >>> print(relevant_metadata)
-    [{'source': 'John Doe', 'page': 5}, {'source': 'Jane Smith', 'page': 7}]
-
-    Note:
-    - The 'vectordb' should be a Vector Database containing document embeddings and metadata.
-    - The 'question' parameter specifies the query question to find relevant documents.
-    - 'source_description', 'page_description', and 'doc_description' describe the metadata attributes and document content.
-    - The function returns a list of dictionaries, each containing metadata attributes and values for relevant documents.
-    - The relevant documents are determined based on their similarity to the query and metadata attributes.
-
-    See Also:
-    - VectorDB: A class representing a Vector Database for document retrieval.
-    - SelfQueryRetriever.from_llm: Method to create a retriever using a language model and Vector Database.
-
-    """
-    metadata_field_info = [
-        AttributeInfo(
-            name="source",
-            description=source_description,
-            type="string",
-        ),
-        AttributeInfo(
-            name="page",
-            description=page_description,
-            type="integer",
-        ),
-    ]
-    document_content_description = doc_description
-    llm = OpenAI(temperature=0)  # Initialize a language model (LLM) with a temperature of 0.
-    retriever = SelfQueryRetriever.from_llm(
-        llm,
-        vectordb,
-        document_content_description,
-        metadata_field_info,
-        verbose=True
-    )  # Create a retriever for self-query.
-    docs = retriever.get_relevant_documents(question)  # Retrieve relevant documents.
-    return [d.metadata for d in docs]  # Return metadata for relevant documents.
-
-
-def pretty_print_docs(docs):
-    """
-    Display a formatted and readable representation of a list of documents.
-
-    This function takes a list of documents and prints each document's content in a human-readable format. It separates
-    each document with a horizontal line for better readability.
-
-    Parameters:
-    - docs (list of Document objects): A list of Document objects to be displayed.
-
-    Returns:
-    - None
-
-    Example:
-    >>> docs = [
-    ...     Document(page_content="This is the content of document 1."),
-    ...     Document(page_content="Document 2 contains some text."),
-    ...     Document(page_content="The third document has important information."),
-    ... ]
-    >>> pretty_print_docs(docs)
-
-    Output:
-    -------------------------------
-    Document 1:
-
-    This is the content of document 1.
-    -------------------------------
-    Document 2:
-
-    Document 2 contains some text.
-    -------------------------------
-    Document 3:
-
-    The third document has important information.
-
-    Note:
-    - This function is designed to make it easy to visually inspect the content of a list of Document objects.
-    - Each document's content is displayed with a heading indicating its position in the list (e.g., "Document 1:").
-    - A horizontal line of '-' characters separates each document for clarity.
-    - The function does not return any value; it only prints the documents to the console.
-
-    See Also:
-    - Document: The class representing documents with 'page_content' attributes.
-
-    """
-    print(f"\n{'-' * 100}\n".join([f"Document {i+1}:\n\n" + d.page_content for i, d in enumerate(docs)]))
-
-def compression(vectordb, question: str, mmr=False):
-    """
-    Compress documents retrieved from a Vector Database using language model-based compression.
-
-    This function performs document compression on documents retrieved from a Vector Database (vectordb) using a
-    language model (LLM) with optional Maximum Marginal Relevance (MMR) post-processing for diversity.
-
-    Parameters:
-    - vectordb (VectorDB): The Vector Database containing document embeddings and metadata.
-    - question (str): The query question for document retrieval and compression.
-    - mmr (bool, optional): Whether to apply Maximum Marginal Relevance (MMR) for diversity (default is False).
-
-    Returns:
-    - compressed_docs (str): The compressed representation of relevant documents.
-
-    Example:
-    >>> vectordb = VectorDB()  # Initialize a Vector Database.
-    >>> question = "Tell me about the history of space exploration."
-    >>> compressed_text = compression(vectordb, question, mmr=True)
-    >>> print(compressed_text)
-
-    Note:
-    - The 'vectordb' parameter should be an initialized Vector Database.
-    - The 'question' parameter specifies the query question for document retrieval and compression.
-    - If 'mmr' is set to True, Maximum Marginal Relevance (MMR) is applied to ensure diverse compression results.
-    - The function returns the compressed representation of relevant documents.
-
-    See Also:
-    - VectorDB: A class representing a Vector Database for document retrieval.
-    - LLMChainExtractor.from_llm: Method to create a document compressor from a language model.
-    - ContextualCompressionRetriever: A retriever for document compression.
-    - pretty_print_docs: Function to format and display compressed documents.
-
-    """
-    llm = OpenAI(temperature=0)  # Initialize a language model (LLM) with a temperature of 0 for compression.
-    compressor = LLMChainExtractor.from_llm(llm)  # Create a document compressor from the LLM.
-    
-    if mmr:
-        # Create a compression retriever with MMR post-processing for diversity.
-        compression_retriever = ContextualCompressionRetriever(
-            base_compressor=compressor,
-            base_retriever=vectordb.as_retriever()
-        )
+    if vectordb is not None and vectordb._collection.count() > 0:
+        vectordb = Chroma(persist_directory=persist_directory, embedding_function=embedding)
+        return vectordb  # Return the existing 'vectordb' if it contains items
     else:
-        # Create a compression retriever without MMR post-processing.
-        compression_retriever = ContextualCompressionRetriever(
-            base_compressor=compressor,
-            base_retriever=vectordb.as_retriever(search_type="mmr")
-        )
-    
-    compressed_docs = compression_retriever.get_relevant_documents(question)  # Compress relevant documents.
-    return pretty_print_docs(compressed_docs)  # Return the compressed representation of documents.
+        # Split documents into smaller text chunks
+        splits = split_docs(files)
 
-def answer_question(vectordb, model_name: str, question: str, method: str, return_docs=True):
-    """
-    Answer a question using contextual information and document retrieval.
-
-    This function uses a language model (LLM) and a Vector Database (vectordb) to answer a given question by
-    retrieving relevant documents and generating concise answers based on contextual information.
-
-    Parameters:
-    - vectordb (VectorDB): The Vector Database containing document embeddings and metadata.
-    - model_name (str): The name of the language model to use for answering questions.
-    - question (str): The question to be answered.
-    - method (str): The method to use for answering questions. Options: "stuffed," "map_reduce," "refine."
-    - return_docs (bool, optional): Whether to return the source documents used for answering (default is True).
-
-    Returns:
-    - result (dict): A dictionary containing the answer and optionally the source documents.
-
-    Example:
-    >>> vectordb = VectorDB()  # Initialize a Vector Database.
-    >>> model_name = "gpt-3.5-turbo"  # Choose a language model.
-    >>> question = "What is the capital of France?"
-    >>> method = "stuffed"  # Choose the answering method.
-    >>> answer = answer_question(vectordb, model_name, question, method)
-    >>> print(answer)
-
-    Note:
-    - The 'vectordb' parameter should be an initialized Vector Database.
-    - 'model_name' specifies the language model to use for answering questions (e.g., "gpt-3.5-turbo").
-    - 'question' is the question to be answered using contextual information.
-    - 'method' determines the answering method: "stuffed" combines context with the question,
-      "map_reduce" generates answers using a map-reduce approach, "refine" refines answers from the model.
-    - 'return_docs' controls whether to return the source documents used for answering.
-    - The function returns a dictionary containing the answer and optionally the source documents.
-
-    See Also:
-    - VectorDB: A class representing a Vector Database for document retrieval.
-    - RetrievalQA.from_chain_type: Method to create a RetrievalQA instance for answering questions.
-    - PromptTemplate.from_template: Method to create a PromptTemplate for generating prompts.
-
-    """
-    # Initialize a language model (LLM) with a temperature of 0.
-    llm = ChatOpenAI(model_name=model_name, temperature=0)
-
-    # Define a template for generating prompts with context and the question.
-    template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. Use three sentences maximum. Keep the answer as concise as possible. Always say "thanks for asking!" at the end of the answer. 
-    {context}
-    Question: {question}
-    Helpful Answer:"""
-
-    # Create a PromptTemplate from the template.
-    QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
-
-    # Initialize a RetrievalQA instance based on the selected answering method.
-    if method == "stuffed":
-        qa_chain = RetrievalQA.from_chain_type(
-            llm,
-            retriever=vectordb.as_retriever(),
-            return_source_documents=return_docs,
-            chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
-        )
-    elif method == "map_reduce":
-        qa_chain = RetrievalQA.from_chain_type(
-            llm,
-            retriever=vectordb.as_retriever(),
-            return_source_documents=return_docs,
-            chain_type="map_reduce"
-        )
-    elif method == "refine":
-        qa_chain = RetrievalQA.from_chain_type(
-            llm,
-            retriever=vectordb.as_retriever(),
-            return_source_documents=return_docs,
-            chain_type="refine"
+        # Create a new Chroma vector database
+        vectordb = Chroma.from_documents(
+            documents=splits,
+            embedding=embedding,  
+            persist_directory=persist_directory  # The directory to save the vector database
         )
 
-    # Use the qa_chain to answer the question.
-    result = qa_chain({"query": question})
+        return vectordb
 
-    # Return the answer and optionally the source documents.
-    return result["result"]
+def get_moderation(question):
+  """
+  Check if the question is safe to ask the model
+
+  Parameters:
+    question (str): The question to check
+
+  Returns a list of errors if the question is not safe, otherwise returns None
+  """
+
+  errors = {
+        "hate": "Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.",
+        "hate/threatening": "Hateful content that also includes violence or serious harm towards the targeted group.",
+        "self-harm": "Content that promotes, encourages, or depicts acts of self-harm, such as suicide, cutting, and eating disorders.",
+        "sexual": "Content meant to arouse sexual excitement, such as the description of sexual activity, or that promotes sexual services (excluding sex education and wellness).",
+        "sexual/minors": "Sexual content that includes an individual who is under 18 years old.",
+        "violence": "Content that promotes or glorifies violence or celebrates the suffering or humiliation of others.",
+        "violence/graphic": "Violent content that depicts death, violence, or serious physical injury in extreme graphic detail.",
+  }
+  response = openai.Moderation.create(input=question)
+  if response.results[0].flagged:
+      # get the categories that are flagged and generate a message
+      result = [
+        error
+        for category, error in errors.items()
+        if response.results[0].categories[category]
+      ]
+      return result
+  return None
+
 
 def doc_chat(vectordb, model_name: str, question: str, return_docs=True):
     """
