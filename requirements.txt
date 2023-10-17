@@ -1,0 +1,16 @@
+langchain==0.0.310
+openai==0.28.1
+PyPDF2==3.0.1
+python-dotenv==1.0.0
+streamlit==1.26.0
+docx2txt
+chromadb==0.4.13
+pypdf
+yt_dlp
+pydub
+tiktoken
+lark
+slack
+slack_sdk
+slackeventsapi
+flask
