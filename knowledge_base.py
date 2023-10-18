@@ -14,11 +14,14 @@ from langchain.memory import ConversationBufferMemory
 load_dotenv(find_dotenv())  # Read local .env file
 openai.api_key = os.environ['OPENAI_API_KEY']
 
+directory = 'knowledge_docs'
+
 def load_files(files):
     """
     Load and process a list of files, returning document loaders.
 
     Args:
+        directory (str): Directory where the files are located.
         files (list of str): List of file paths to be loaded.
 
     Returns:
@@ -27,10 +30,11 @@ def load_files(files):
     loaders = []
 
     for file in files:
-        if file.endswith(".pdf"):
-            loaders.append(PyPDFLoader(file))
-        elif file.endswith((".doc", ".docx")):
-            loaders.append(Docx2txtLoader(file))
+        file_path = os.path.join(directory, file)
+        if file_path.endswith(".pdf"):
+            loaders.append(PyPDFLoader(file_path))
+        elif file_path.endswith((".doc", ".docx")):
+            loaders.append(Docx2txtLoader(file_path))
 
     return loaders
 
