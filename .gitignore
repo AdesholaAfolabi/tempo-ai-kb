@@ -177,7 +177,7 @@ cython_debug/
 ._*
 Thumbs.db
 
-*.pdf
+#*.pdf
 *.env
 *.docx
 *.docx

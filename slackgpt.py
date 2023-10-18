@@ -17,7 +17,7 @@ load_dotenv(find_dotenv())
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Define document files and directory for document embeddings
-files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf"]
+files = ["Ultimate_introduction_white_paper.pdf", "Planner-complete-guide-to-resource-planning.pdf", "roadmunk_support.pdf"]
 persist_directory = "docs/chroma/"
 
 # Create or load a vector database for document embeddings
