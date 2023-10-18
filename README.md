@@ -1,7 +1,11 @@
 # Tempo AI Knowledge Base
 
 The AI Knowledge Base (AIKB) will be a one-stop-shop for ALL information retrieval across all Tempo products.
-The application is deployed as both a web app (using Streamlit) and a Slack app.
+The application is deployed as both a web app (using Streamlit) and a Slack app. See end to end application diagram below
+
+
+![end to end](./app_images/tempo-kb.png)
+
 
 ## Getting Started
 
@@ -49,7 +53,3 @@ The Slack app setup involves a few additional steps, as it requires access to th
 7. In your Slack workspace, type /ai-helper and ask your question to interact with the app. See sample request and response below
 
 ![slack app](./app_images/slack.png)
-
-See end to end application diagram below
-
-![end to end](./app_images/tempo-kb.png)
